@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.coolweather.android.MainActivity;
 import com.coolweather.android.WeatherActivity;
 import com.coolweather.android.db.City;
 import com.coolweather.android.db.County;
@@ -93,11 +94,23 @@ public class ChooseAreaFragment extends Fragment {
                     selectedCity = cityList.get(position);
                     queryCounties();
                 }else if(currentLevel == LEVEL_COUNTY){
+                    //根据在不同的Activity中打开，实现不同逻辑
                     String weatherId = countyList.get(position).getWeatherId();
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id",weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    //处理首页drawer逻辑
+                    if(getActivity() instanceof MainActivity){
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id",weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    //处理天气页drawer逻辑
+                    }else if(getActivity() instanceof WeatherActivity){
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        //点击后，关闭滑动菜单，显示下拉刷新进度条，请求新城市的数据
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestweather(weatherId);
+                    }
+
                 }
             }
         });
